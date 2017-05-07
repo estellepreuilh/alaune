@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>    
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Journaux</title>
+     <script src="http://d3js.org/d3.v3.min.js"> </script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css" />    
+
+  </head>
+  <body>
+  
+  <h2>Choisissez un journal : </h2>
+	<form action="/quel_journal" method="post">
+
+	<select name="journal">
+	<option value="Le Monde">Le Monde</option>
+	<option value="Le Figaro">Le Figaro</option>
+	<option value="Le Journal du Net">Le Journal du Net</option>
+	<option value="Le Point">Le Point</option>
+	<option value="Courrier International">Courrier International</option>
+	<option value="Les Echos">Les Echos</option>
+	<option value="La Tribune">La Tribune</option>
+	<option value="Le Dauphine"> Le Dauphiné Libéré </option>
+	<option value="Ouest France">Ouest France</option>
+	<option value="Sud Ouest"> Le Sud Ouest </option>
+	<option value="Le Parisien">Le Parisien</option>
+	<option value="20 minutes">20 minutes</option>
+
+	</select>
+
+	<input type="submit" value="Valider"></input>
+	</form>
+	
+	
+	
+	  <h2>Choisissez un candidat :</h2>
+	<form action="/quel_candidat" method="post">
+
+	<select name="candidat">
+	<option value="Fillon">Fillon</option>
+	<option value="Macron">Macron</option>
+	<option value="Le Pen">Le Pen</option>
+	<option value="Cheminade">Cheminade</option>
+	<option value="Asselineau">Asselineau</option>
+	<option value="Mélanchon">Mélanchon</option>
+	<option value="Poutou">Poutou</option>
+	<option value="Arthaud"> Artaud </option>
+	<option value="Lassalle">Lassalle</option>
+	<option value="Hamon">Hamon</option>
+	<option value="Aignan">Aignan</option>
+
+	</select>
+
+	<input type="submit" value="Valider"></input>
+	</form>
+	
+  
+    <script type="text/javascript">
+function piechart(data, nb)
+{
+	var nb = nb;
+    var w = 500,                        //width
+    h = 450,                            //height
+    r = 250,                            //rayon
+    color = d3.scale.category20c();     
+ 
+    var vis = d3.select("body")
+        .append("svg:svg")              //céer le SVG 
+        .data([data])                   //y associe les données 
+            .attr("width", w)          
+            .attr("height", h)
+        .append("svg:g")                
+            .attr("transform", "translate(" + r + "," + r + ")")   
+
+    var arc = d3.svg.arc()             
+       	.innerRadius(70)
+        .outerRadius(r-50);
+
+    var pie = d3.layout.pie()           //créé l'arc selon les données 
+        .value(function(d) { return d.value; });  
+
+    var arcs = vis.selectAll("g.slice")    
+        .data(pie)                          
+        .enter()                            
+            .append("svg:g")                
+                .attr("class", "slice")   
+		.on('click',function(d,i){
+  		   d3.select(this)
+    	   .transition()
+    	   .duration(1000)
+   		   .attr("transform",function(d){
+       
+            if (!d.data._expanded){
+               d.data._expanded = true;
+               var a = d.startAngle + (d.endAngle - d.startAngle)/2 - Math.PI/2;
+               var x = Math.cos(a) * 20;
+               var y = Math.sin(a) * 20;
+               
+               return 'translate(' + x + ',' + y + ')';  
+                      
+        }   else {
+               d.data._expanded = false;
+               // move it back
+               return 'translate(0,0)';                
+        }
+    }); 
+});
+		 
+        arcs.append("svg:path")
+                .attr("fill", function(d, i) { return color(i); } ) 
+                .attr("d", arc);                                   
+
+        arcs.append("svg:text")                                     //ajoute les labels 
+                .attr("transform", function(d) {                    //centrer le texte
+                d.outerRadius = r;
+                return "translate(" + arc.centroid(d) + ")";       
+            })
+            .attr("text-anchor", "middle") 
+            .attr("font-weight","italic")       
+            .style("fill","black")	
+            .style("font", "14px lucida grande")					                
+            .text(function(d, i) { 
+            var N = data[i].value * 100 / nb ;					//donne un pourcentage du nb d'unes sur le candidat 
+            if (N>2.5) 									//pour ne pas que les noms des candidats dont il y a peu d'articles dessus soient écrient les uns sur les autres
+            	{						
+            	return data[i].label + ' ' + N.toFixed(1) + ' %';}			// toFixed coupe le nb décimal à un chiffre après la virgule
+            else {
+        	
+            }
+     
+            });        //il y a un probleme des fois le texte et recouvert par la couleur qui représente le candidat suivant
+                 
+    
+ }       
+    </script>
+	<h5>Proportions des unes sorties ce mois dernier sur chacun des candidats aux présidentielles</h5>
+</body>
+</html>
